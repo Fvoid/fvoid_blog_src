@@ -1,0 +1,36 @@
+---
+title: microk8s script analysis
+date: 2021-01-09 09:05:53
+tags:
+
+---
+
+
+# microk8s-add-node.wrapper
+
+- [shell set review](./echo+shell中的特殊变量.md)
+
+- `set -eu`: `-e` 使得脚本只要发生错误，就终止执行; `-u` 执行脚本的时候，如果遇到不存在的变量，Bash 名默认忽略它。
+- 若当前存在`${SNAP_DATA}/var/lock/clustered.lock`，则不执行并提示在master执行
+- 获取ca.crt的subject
+	+ 若subject为127.0.0.1，报错
+- 若不存在文件`$SNAP_DATA/credentials/cluster-tokens.txt`,创建一个
+- 若存在microk8s group，将`$SNAP_DATA/credentials/cluster-tokens.txt`的group设为microk8s
+	+ 对于& 1 更准确的说应该是文件描述符 1,而1标识标准输出，stdout。
+	+ 对于2 ，表示标准错误，stderr。
+	+ 2>&1 的意思就是将标准错误重定向到标准输出。这里标准输出已经重定向到了 /dev/null。那么标准错误也会输出到/dev/null
+- 保存当前IFS（Internal Field Separator）
+
+```shell
+$ echo $IFS
+
+$ echo "$IFS" | od -b
+0000000 040 011 012 012
+0000004
+
+"040"是空格，"011"是Tab，"012"是换行符"\n" 
+```
+
+- 获取token
+- 还原IFS
+- 若`${SNAP_DATA}"/args/cluster-agent`中存在"25000"
